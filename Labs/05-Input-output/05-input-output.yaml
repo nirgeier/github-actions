@@ -1,0 +1,60 @@
+# This is a basic workflow to help you get started with Actions
+name: 05 - Workflow Inputs
+
+# "run-name": GitHub displays the workflow run name in the list of workflow runs on your repository's "Actions" tab
+run-name: "05 - Workflow with external inputs"
+
+# "on":  - define which event(s) can cause the workflow to run.
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  # Add button to the GUI :-)
+  workflow_dispatch:
+    # Inputs is under the 'workflow_dispatch' so it can be set via the GUI
+    inputs:
+      build_version:
+        description: "Build version"
+        required: true
+        default: "1.0.0"
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  inputs_demo:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    outputs:
+      build_version: ${{ steps.build_version.outputs.build_version }}
+      output2: ${{ steps.step2.outputs.step2value }}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # If the inputs are not supplied during the run they will be empty.
+      # In this case we set them prior to the execution
+      - name: Set build_version output
+        id: build_version
+
+        # The trick is to use "github actions output" values to set default value
+        # since we can wish to use defaults event if the workflow is not invoked
+        # from the GutHub Actions gui
+        run: |
+          BUILD_VERSION=${{ github.event.inputs.build_version }}
+          echo "build_version=${BUILD_VERSION:-"1.0.0"}" > $GITHUB_OUTPUT
+
+      # Print out the input values
+      - name:
+          Print out the input values
+          # Since we used the output input variable we need to reference it
+          # using "steps.<step_name>.outputs.<output_name>"
+        run: |
+          echo "${{ steps.build_version.outputs.build_version }}"
+
+      # Uses an action in the root directory
+      # The workflow will look for action.yaml in the root directory
+      # - name: Use action from repo
+      #   uses: ./

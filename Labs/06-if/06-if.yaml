@@ -1,0 +1,86 @@
+###
+### This sample will teach us how to use if statement
+### For the demo we will use several options
+###
+
+# "run-name": GitHub displays the workflow run name in the list of workflow runs on your repository's "Actions" tab
+run-name: "06 - Workflow with is statement"
+
+# "on":  - define which event(s) can cause the workflow to run.
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  # We use several events which will be used in teh if condition for this demo
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  # Add button to the GUI :-)
+  workflow_dispatch:
+    # Inputs is under the 'workflow_dispatch' so it can be set via the GUI
+
+jobs:
+  ###
+  ### In this step we will be using simple bash if-else
+  ###
+  unix_bash:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Bash -> What is the event?
+        id: bash_output
+        run: |
+          if [ ${{ github.event_name }} == 'pull_request' ]; 
+          then
+            echo "This is a pull request event"
+          elif [ ${{ github.event_name }} == 'push' ]; 
+          then
+            echo "This is a push event"
+          else
+            echo "This is an unknown event"
+          fi
+
+  ###
+  ### In this step we will be using GITHUB_OUTPUT
+  ###
+  target-stage:
+    runs-on: ubuntu-latest
+
+    steps:
+      ###
+      ### In this step we assume that push id done to a staging env
+      ### and pull request is done to production env
+      ###
+      - name: Determine the environment for deployment
+        id: target_env
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; 
+          then
+            echo "selected-stage=staging" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" == "pull_request" ]; 
+          then
+            echo "selected-stage=production" >> "$GITHUB_OUTPUT"
+          else
+            echo "selected-stage=test" >> "$GITHUB_OUTPUT"
+          fi
+    outputs:
+      selected-stage: ${{ steps.target_env.outputs.selected-stage }}
+
+  deploy-environment:
+    needs: target-stage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run Production
+        if: ${{ needs.target-stage.outputs.selected-stage == 'production' }}
+        run: echo "Deploying to production environment..."
+
+      - name: Run Staging
+        if: ${{ needs.target-stage.outputs.selected-stage == 'staging' }}
+        run: echo "Deploying to staging environment..."
+
+      - name: Run Test
+        if: ${{ needs.target-stage.outputs.selected-stage == 'test' }}
+        run: echo "Deploying to test environment..."
+

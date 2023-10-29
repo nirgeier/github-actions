@@ -1,0 +1,4 @@
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-20.04
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-20.04
+-P force-pull=false
+-P container-architecture=linux/amd64

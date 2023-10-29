@@ -1,0 +1,45 @@
+name: 07- Success
+
+# Run on every branch
+on:
+  push:
+    branches: "*"
+  pull_request:
+    branches: "*"
+
+jobs:
+  ###
+  ### This job will fail on purpose and
+  ###
+  failure-demo:
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
+    name: Job
+
+    steps:
+      ###
+      ### We fail this step on purpose and then test the status in the
+      ### next steps, the other steps run based upon the result of the first step
+      ###
+      - name: Step 01 - Run always
+        uses: ./fail-job
+        ###
+        ### Continue even if the steps has failed
+        ###
+        continue-on-error: true
+
+      - name: Step 02 - Run on failure
+        ###
+        ### This will be true even if the previous step has failed since we
+        ### added the `continue-on-error: true` to the step
+        ###
+        if: ${{ success() }}
+        run: echo Step 01 passed !!!
+
+      - name: Step 03 - Step 01 unknown status
+        run: |
+          echo Step 03 - Step 01 unknown status
+
+      - name: Step 04 - Step 01 unknown status
+        run: |
+          echo Step - Step 01 failed

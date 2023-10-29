@@ -1,0 +1,36 @@
+name: 07 - Failure
+
+# Run on every branch
+on:
+  push:
+    branches: "*"
+  pull_request:
+    branches: "*"
+
+jobs:
+  ###
+  ### This job will fail on purpose and
+  ###
+  failure-demo:
+    runs-on: self-hosted
+    name: Job
+
+    steps:
+      ###
+      ### We fail this step on purpose and then test the status in the
+      ### next steps, the other steps run based upon the result of the first step
+      ###
+      - name: Step 01 - Run always
+        uses: ./fail-job
+
+      - name: Step 02 - Run on failure
+        if: ${{ failure() }}
+        run: echo Step 01 Failed !!!
+
+      - name: Step 03 - Run on Success
+        run: |
+          echo Step 03 - Success
+
+      - name: Step 04 - Run on Success
+        run: |
+          echo Step 04 - Success

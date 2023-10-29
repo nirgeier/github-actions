@@ -1,0 +1,26 @@
+# This is a basic workflow for building Docker image
+name: 02 - Docker Image CI
+
+# Events
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Job
+jobs:
+
+  build-docker:
+    # Runner
+    runs-on: ubuntu-latest
+    # Steps
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build the Docker image
+        run: ls -la
+      # Build the image using docker shell command
+      # - name: Build the Docker image
+      #   run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
