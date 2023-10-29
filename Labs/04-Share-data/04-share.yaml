@@ -1,0 +1,93 @@
+###
+### This sample will teach us how to share data between jobs
+### For the demo we will use different OS
+###
+### This sample is based upon:
+###
+### This uploads artifacts from your workflow allowing you to share data between jobs
+### and store data once a workflow is complete.
+### > https://github.com/actions/upload-artifact
+###
+### This download artifacts - downloads artifacts from your build
+### > https://github.com/actions/download-artifact
+###
+name: 04- Share data between jobs - Simple Calculator
+
+# The event
+on:
+  push:
+    branches: [main]
+
+# Set the environment variables
+env:
+  # The first number for the calculation
+  first_number: 5
+
+  # The second number for the calculation
+  second_number: 8
+
+# Jobs list
+jobs:
+  # Add the 2 desired numbers
+  add_numbers:
+    name: Add 2 numbers
+    runs-on: ubuntu-latest
+    steps:
+      # Run a unix simple expr command
+      - shell: bash
+        run: >
+          echo "Number 1: ${{ env.first_number }}"  > shared_file.txt 
+          echo "Number 2: ${{ env.second_number }}" >> shared_file.txt
+          echo "Sum: $(expr ${{ env.first_number }} + ${{ env.second_number }})" > shared_file.txt
+
+      # Upload the result file as artifact so it can be shared between jobs
+      - name: Upload shared content between jobs
+        uses: actions/upload-artifact@v3
+        # The name of the artifact
+        with:
+          name: shared_artifact
+          path: shared_file.txt
+  ###
+  ### multiply_numbers depends on add_numbers to complete
+  ###
+  multiply_numbers:
+    name: Multiply 2 numbers
+    # depends on the previous job
+    needs: add_numbers
+    # This time execute a windows agent, just for the demo .....
+    runs-on: windows-latest
+    steps:
+      # Download the result file from previous job
+      - name: Download math result for job 1
+        uses: actions/download-artifact@v3
+        with:
+          name: shared_artifact
+      # Add more math operations to the shared file and upload it again
+      - shell: bash
+        run: |
+          echo "Mul: $(expr ${{ env.first_number }} \* ${{ env.second_number }})" >> shared_file.txt
+      # Upload the file
+      - name: Upload math result for job 2
+        uses: actions/upload-artifact@v3
+        with:
+          name: shared_artifact
+          path: shared_file.txt
+          retention-days: 30
+          
+  display_shared_file:
+    name: Display shared file content
+    # Like before - this job depends on the previous step
+    needs: multiply_numbers
+    # This time execute a mac-os agent, just for the demo since we can
+    runs-on: macOS-latest
+    steps:
+      - name: Download shared file 
+        uses: actions/download-artifact@v3
+        with:
+          name: shared_artifact
+      
+      # Print the file content to validate the Demo CI process
+      - name: Print the final result
+        shell: bash
+        run: |
+          cat shared_file.txt
