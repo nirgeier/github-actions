@@ -1,0 +1,51 @@
+# This is a basic workflow to help you get started with Actions
+name: 00 - Workflow Sample
+
+# "run-name": GitHub displays the workflow run name in the list of workflow runs on your repository's "Actions" tab
+run-name: "00 - Workflow Sample - run-name"
+
+# "on":  - define which event(s) can cause the workflow to run.
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  # Some events have activity types that give you more control over when your workflow should run.
+  # Use "on.<event_name>.types" to define the type of event activity that will trigger a workflow run.
+  # on:
+  #  label:
+  #    types:
+  #      - created
+
+  # Allows you to run this workflow manually from the Actions tab
+  # Add button to the GUI :-)
+  workflow_dispatch:
+
+env:
+  VAR1: Codewizard
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Dump the job JSON context
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      # Runs a set of commands using the runner's shell
+      - name: Run a multi-line script
+        run: |
+          echo ${{env.VAR1}}
+
+      # Uses an action in the root directory
+      # The workflow will look for action.yaml in the root directory
+      # - name: Use action from repo
+      #   uses: ./
